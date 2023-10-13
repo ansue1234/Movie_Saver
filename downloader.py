@@ -1,6 +1,9 @@
 import requests
 import time
 import re
+import os
+import argparse
+
 from bs4 import BeautifulSoup
 from selenium import webdriver 
 from selenium.webdriver.common.by import By
@@ -9,7 +12,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import os
+
 
 # Simulates the scrolling behavior
 def scroll(driver):
@@ -51,20 +54,6 @@ def get_movie_list(driver, url, first_time=True, current_movie_num=0):
         print()
         # print(num_movies, num_movies_with_review)
         num_movies = int(num_movies)
-    # num_movies = 23
-    # getting the movies from the list
-    # movies = []
-    # last_height = driver.execute_script('return document.body.scrollHeight') 
-    # index = current_movie_num
-    # while num_movies > len(movies): 
-    #     # Simulate scrolling
-    #     driver.execute_script('window.scrollTo(0, document.body.scrollHeight);') 
-    #     # wait for content to load 
-    #     time.sleep(1) 
-    #     new_height = driver.execute_script('return document.body.scrollHeight') 
-    #     if new_height == last_height: 
-    #         break 
-    #     last_height = new_height 
 
     # adding new unseen elements into the movies list
     elements = driver.find_elements(By.CSS_SELECTOR, 'div[class*="rankMovieCard-content-"]')[current_movie_num:]
@@ -148,7 +137,7 @@ def get_movie_accessories(driver, movie_name, path):
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR,'div[class*="movieDetail-content-"]'))
             )
-        time.sleep(1)
+        time.sleep(2)
         print("Details Page Loaded for "  + movie_name)
     except Exception as error:
         print(error, ' Unable to load info page on ' + movie_name)
@@ -199,9 +188,12 @@ def get_movie_accessories(driver, movie_name, path):
         if comments:
             for comment in comments:
                 comment_soup = BeautifulSoup(comment.get_attribute("innerHTML"), "html.parser")
-                comment_header = comment_soup.find('div', {'class': re.compile(r'commentItem-nickNameTime-')}).get_text()
-                comment_content = comment_soup.find('div', {'class': re.compile(r'commentItem-commentText-')}).get_text()
-                line = "*" + comment_header + "*\n" + comment_content + '\n'
+                comment_header = comment_soup.find('div', {'class': re.compile(r'commentItem-nickNameTime-')}).get_text().strip()
+                comment_content = comment_soup.find('div', {'class': re.compile(r'commentItem-commentText-')}).get_text().strip()
+                comment_info = comment_header.split()
+                commenter = comment_info[0]
+                comment_time_nickname = "("+ ' '.join(comment_info[1:]) +")"
+                line = "**" + commenter + "**" + " *"+ comment_time_nickname +"*:\n\n" + comment_content.strip() + '\n\n'
                 movie_comments += [line]
     except Exception as error:
         print(error, 'Not able to get comments!')
@@ -213,7 +205,7 @@ def get_movie_accessories(driver, movie_name, path):
             for creator in creators:
                 creator_soup = BeautifulSoup(creator.get_attribute("innerHTML"), "html.parser")
                 creator_info = creator_soup.find_all('div', {'class': re.compile(r'movieDetail-text-')})
-                creator_position, creator_name = creator_info[0].get_text(), creator_info[1].get_text()
+                creator_position, creator_name = creator_info[0].get_text().strip(), creator_info[1].get_text().strip()
                 # print(creator_position, creator_name)
                 if creator_position not in movie_creators.keys():
                     movie_creators[creator_position] = []
@@ -249,9 +241,9 @@ def get_movie_accessories(driver, movie_name, path):
 
         file.write("## 主创\n")
         for k in movie_creators.keys():
-            file.write("**" + k + "**\n")
+            file.write("\n**" + k + "**\n")
             for creator in movie_creators[k]:
-                file.write("- " + creator)
+                file.write("- " + creator + "\n")
         
         file.write("## 奖项\n")
         file.write(' ,'.join(movie_awards) + '\n')
@@ -298,9 +290,10 @@ def get_movie_details(movie, movie_name, path, driver):
             js_code = "arguments[0].scrollIntoView({behavior: 'auto', block: 'center', inline: 'center'});"
             driver.execute_script(js_code, elem)
             elem.click()
+            time.sleep(1)
         except Exception as error:
             print(error, ' Unable to click button to get more info on ' + movie_name)
-            return movie_foriegn_name, movie_review_title, movie_review_url, movie_summary 
+            return None, movie_foriegn_name, movie_review_title, movie_review_url, movie_summary 
         
         try:
             print("Loading Movie Review Page for " + movie_name)
@@ -312,10 +305,9 @@ def get_movie_details(movie, movie_name, path, driver):
             print("Review Page Loaded for "  + movie_name)
         except Exception as error:
             print(error, ' Unable to load details page on ' + movie_name)
-            return movie_foriegn_name, movie_review_title, movie_review_url, movie_summary 
+            return None, movie_foriegn_name, movie_review_title, movie_review_url, movie_summary 
         
         # getting the movie review URL, review title and foriegn name
-        # origin_window = driver.window_handles[0]
         review_url = driver.find_element(By.ID, 'player-container-id_html5_api').get_attribute('src')
         if review_url:
             movie_review_url = review_url
@@ -359,7 +351,7 @@ def parse_movie_data(list_name, movies, driver, current_movie_num, num_movies):
         if not download_details:
             header = '编号,电影名称,上映时间,制片地区,类型,时长(分钟）\n'
         else:
-            header = '编号,电影名称,上映时间,制片地区,类型,时长(分钟）,外文名,解说名,解说URL,简概\n'
+            header = '编号,电影名称,上映时间,制片地区,类型,时长(分钟）,外文名,解说名,解说URL\n'
         file.write(header)
 
         num_scroll = 0
@@ -379,7 +371,7 @@ def parse_movie_data(list_name, movies, driver, current_movie_num, num_movies):
                 if download_details:
                     details = get_movie_details(movie, movie_name, path, driver)
                     details_acquired, movie_foriegn_name, movie_review_title, movie_review_url, movie_summary = details
-                    line_info += [movie_foriegn_name, movie_review_title, movie_review_url, movie_summary]
+                    line_info += [movie_foriegn_name, movie_review_title, movie_review_url]
                     # If there was a page change
                     if details_acquired:
                         # scroll to previous position before page switch
@@ -408,25 +400,27 @@ def parse_movie_data(list_name, movies, driver, current_movie_num, num_movies):
             num_scroll += 1
         print("Finished !")
 
-	# print title 
-# print(movies, len(movies))
-# URL = "https://app.kplanet.vip/m/share/movie-group?groupID=0&fansID=261154&type=701"
-# page = requests.get(URL)
-# movies = driver.find_elements(By.CLASS_NAME, "rankMovieCard-content-3gOsD_0")
-# print(movies)
-# soup = BeautifulSoup(driver.page_source, "html.parser")
-
 if __name__ == "__main__":
-    download_cover = True
-    download_accessories = True
-    download_details = True
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("url", help="你的影单链接")
+    parser.add_argument("--download_cover", action="store_true",
+                        help="下载海报")
+    parser.add_argument("--download_details", action="store_true",
+                        help="下载影片简介，解说链接")
+    parser.add_argument("--download_accessories", action="store_true",
+                        help="下载影片简介，日历背景，剧照，评论，解说链接")
+    args = parser.parse_args()
+
+    download_cover = args.download_cover
+    download_details = args.download_details
+    download_accessories = args.download_accessories
+    url = args.url 
 
     chrome_options = Options()
     chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47")
-    url = 'https://app.kplanet.vip/m/share/movie-group?groupID=0&fansID=261154&type=701' 
     
-    # driver = webdriver.Chrome(service=ChromeService( 
-    # 	ChromeDriverManager().install()), options=chrome_options) 
+    
     driver = webdriver.Chrome(service=ChromeService( 
         ChromeDriverManager().install()), options=chrome_options) 
     driver.maximize_window()
