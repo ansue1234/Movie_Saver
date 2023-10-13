@@ -61,7 +61,7 @@ def get_movie_list(driver, url, first_time=True, current_movie_num=0):
         total_hours = total_secs//3600
         remainder_mins = (total_secs % 3600) // 60
         remainder_secs = (total_secs % 3600) % 60
-        print('***预计用时{0}小时{1}分钟{2}秒, 总共{3}秒***'.format(total_hours, remainder_mins, remainder_secs, total_secs))
+        print('***预计用时{0}小时{1}分钟{2}秒, 总共{3}秒***\n'.format(total_hours, remainder_mins, remainder_secs, total_secs))
 
     # adding new unseen elements into the movies list
     elements = driver.find_elements(By.CSS_SELECTOR, 'div[class*="rankMovieCard-content-"]')[current_movie_num:]
@@ -320,13 +320,11 @@ def get_movie_details(movie, movie_name, path, driver):
             return None, movie_foriegn_name, movie_review_title, movie_review_url, movie_summary 
         
         # getting the movie review URL, review title and foriegn name
-        c = 0
-        while not movie_review_url and c < 1000:
-            review_url = driver.find_element(By.ID, 'player-container-id_html5_api').get_attribute('src')
-            if review_url:
-                movie_review_url = review_url
-            c += 1
-        if c >= 1000:
+
+        review_url = driver.find_element(By.ID, 'player-container-id_html5_api').get_attribute('src')
+        if review_url:
+            movie_review_url = review_url
+        else:
             print("Review URL not found!")
 
         try:
@@ -405,8 +403,6 @@ def parse_movie_data(list_name, movies, driver, current_movie_num, num_movies):
                                                         first_time=False,
                                                         current_movie_num=movie_num_at_current_scroll)
                 current_movie_num += 1
-                print("Current Movie Num:")
-                print(current_movie_num)
                 # write information to csv file
                 file_line = ','.join(line_info)
                 file_line += '\n'
@@ -471,7 +467,7 @@ if __name__ == "__main__":
         begin_time = time.time()
         movies, current_movie_num, list_name, num_movies = get_movie_list(driver, url)
         parse_movie_data(list_name, movies, driver, current_movie_num, num_movies)
-        mins_used = time.time() - begin_time
+        mins_used = (time.time() - begin_time)/60
         print("---用时 %s 分钟---\n\n" % (mins_used))
     else:
         print("Invalid Params, 请检查 params.yaml 的参数格式！")
