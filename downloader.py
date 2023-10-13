@@ -3,6 +3,7 @@ import time
 import re
 import os
 import argparse
+import yaml
 
 from bs4 import BeautifulSoup
 from selenium import webdriver 
@@ -52,8 +53,15 @@ def get_movie_list(driver, url, first_time=True, current_movie_num=0):
         print("本影单名为：" + list_name)
         print('本影单共有：{0}部电影，{1}部电影附有解说'.format(num_movies, num_movies_with_review))
         print()
-        # print(num_movies, num_movies_with_review)
+        
+        # calculating total time it will take 
         num_movies = int(num_movies)
+        num_movies_with_review = int(num_movies_with_review)
+        total_secs = (num_movies - num_movies_with_review)*3.0 + num_movies_with_review*30
+        total_hours = total_secs//3600
+        remainder_mins = (total_secs % 3600) // 60
+        remainder_secs = (total_secs % 3600) % 60
+        print('***预计用时{0}小时{1}分钟{2}秒, 总共{3}秒***'.format(total_hours, remainder_mins, remainder_secs, total_secs))
 
     # adding new unseen elements into the movies list
     elements = driver.find_elements(By.CSS_SELECTOR, 'div[class*="rankMovieCard-content-"]')[current_movie_num:]
@@ -138,7 +146,7 @@ def get_movie_accessories(driver, movie_name, path):
             EC.presence_of_element_located((By.CSS_SELECTOR,'div[class*="movieDetail-content-"]'))
             )
         time.sleep(2)
-        print("Details Page Loaded for "  + movie_name)
+        # print("Details Page Loaded for "  + movie_name)
     except Exception as error:
         print(error, ' Unable to load info page on ' + movie_name)
     
@@ -164,6 +172,7 @@ def get_movie_accessories(driver, movie_name, path):
 
     # get summary
     try:
+        print("Getting summary")
         summary = driver.find_element(By.CSS_SELECTOR, 'div[class*="movieDetail-summary-"]')
         summary_text  = summary.find_element(By.CSS_SELECTOR,'div[class*="movieDetail-text-"]').text
         if summary_text:
@@ -173,6 +182,7 @@ def get_movie_accessories(driver, movie_name, path):
     
     # get awards
     try:
+        print("Getting awards")
         awards_wrapper = driver.find_element(By.CSS_SELECTOR, 'div[class*="movieDetail-awardWrapper-"]')
         awards = awards_wrapper.find_elements(By.CSS_SELECTOR,'span[class*="movieDetail-text-"]')
         if awards:
@@ -183,6 +193,7 @@ def get_movie_accessories(driver, movie_name, path):
     
     # get comments
     try:
+        print("Getting comments")
         comments_wrapper = driver.find_element(By.CSS_SELECTOR, 'div[class*="movieDetail-commentWrapper-"]')
         comments = comments_wrapper.find_elements(By.CSS_SELECTOR,'li[class*="commentItem-commentSection-"]')
         if comments:
@@ -199,6 +210,7 @@ def get_movie_accessories(driver, movie_name, path):
         print(error, 'Not able to get comments!')
     # get creators
     try:
+        print("Getting creators")
         creators_wrapper = driver.find_element(By.CSS_SELECTOR, 'div[class*="movieDetail-actorWrapper-"]')
         creators = creators_wrapper.find_elements(By.CSS_SELECTOR,'li[class*="movieDetail-item-"]')
         if creators:
@@ -214,6 +226,7 @@ def get_movie_accessories(driver, movie_name, path):
         print(error, 'Not able to get creators!')
 
     try:
+        print("Getting stills")
         stills_wrapper = driver.find_element(By.CSS_SELECTOR, 'div[class*="movieDetail-stillWrapper-"]')
         # stills = stills_wrapper.find_elements(By.CSS_SELECTOR,'li[class*="movieDetail-item-"]')
         stills_soup = BeautifulSoup(stills_wrapper.get_attribute("innerHTML"), "html.parser")
@@ -225,6 +238,7 @@ def get_movie_accessories(driver, movie_name, path):
 
     # get calendar backgrounds (1st movie detail relative wrapper)
     try:
+        print("Getting calendar background ...")
         calendars_wrapper = driver.find_element(By.CSS_SELECTOR, 'div[class*="movieDetail-relativeWrapper-"]')
         calendars_soup = BeautifulSoup(calendars_wrapper.get_attribute("innerHTML"), "html.parser")
         calendars = calendars_soup.find_all('img', {'class': re.compile(r'movieDetail-calendar-')})
@@ -255,28 +269,26 @@ def get_movie_accessories(driver, movie_name, path):
     # Downloading stills
     for i in range(len(movie_stills)):
         with open(img_path + '/剧照{0}.jpeg'.format(i + 1),"wb") as img: 
-            print("Saving stills ...")
+            print("Saving stills {0} ...".format(i + 1))
             r = requests.get(movie_stills[i], stream = True)
             for chunk in r.iter_content(chunk_size=1024): 
                 # writing one chunk at a time to jpeg file 
                 if chunk: 
                     img.write(chunk) 
-            print("Still saved!")
 
     # Saving calendar backgrounds
     for j in range(len(movie_calendar_pics)):
         with open(img_path + '/日历背景{0}.jpeg'.format(j + 1),"wb") as img: 
-            print("Saving calendar bg ...")
+            print("Saving calendar bg {0}...".format(j + 1))
             r = requests.get(movie_calendar_pics[j], stream = True)
             for chunk in r.iter_content(chunk_size=1024): 
                 # writing one chunk at a time to jpeg file 
                 if chunk: 
                     img.write(chunk) 
-            print("Bg saved!")
     print("All Accessories saved for " + movie_name + "!")
     driver.back()
 
-
+# Get movie foriegn name, review url
 def get_movie_details(movie, movie_name, path, driver):
     movie_foriegn_name, movie_review_title, movie_review_url, movie_summary = '', '', '', ''
     # Check whether more details of movie is available
@@ -302,25 +314,33 @@ def get_movie_details(movie, movie_name, path, driver):
                 )
             driver.set_window_size(200, 660)
             time.sleep(1)
-            print("Review Page Loaded for "  + movie_name)
+            # print("Review Page Loaded for "  + movie_name)
         except Exception as error:
             print(error, ' Unable to load details page on ' + movie_name)
             return None, movie_foriegn_name, movie_review_title, movie_review_url, movie_summary 
         
         # getting the movie review URL, review title and foriegn name
-        review_url = driver.find_element(By.ID, 'player-container-id_html5_api').get_attribute('src')
-        if review_url:
-            movie_review_url = review_url
+        c = 0
+        while not movie_review_url and c < 1000:
+            review_url = driver.find_element(By.ID, 'player-container-id_html5_api').get_attribute('src')
+            if review_url:
+                movie_review_url = review_url
+            c += 1
+        if c >= 1000:
+            print("Review URL not found!")
+
         try:
             foriegn_name = driver.find_element(By.CSS_SELECTOR, 'div[class*="kstarOriginal-foreignName-"]')
             movie_foriegn_name = foriegn_name.get_attribute('innerHTML')
         except:
             print("No Foriegn Name")
+        
         summary = driver.find_element(By.CSS_SELECTOR, 'div[class*="kstarOriginal-summary-"]')
         summary_soup = BeautifulSoup(summary.get_attribute('innerHTML'), 'html.parser')
         summary_text = summary_soup.find('div', class_='one-line-ellipsis').text.strip('\n')
         if summary_text:
             movie_summary = summary_text
+
         # if review_title:
         #     movie_review_title = review_title
         abstract = driver.find_element(By.CSS_SELECTOR, 'div[class*="kstarOriginal-abstract-"]')
@@ -338,8 +358,7 @@ def get_movie_details(movie, movie_name, path, driver):
         print("Details Acquired!")
     return more_details, movie_foriegn_name, movie_review_title, movie_review_url, movie_summary
 
-
-
+# Main function get movie info and write in a csv
 def parse_movie_data(list_name, movies, driver, current_movie_num, num_movies):
     # working on movies list
     path = './movies/'+ list_name
@@ -355,8 +374,9 @@ def parse_movie_data(list_name, movies, driver, current_movie_num, num_movies):
         file.write(header)
 
         num_scroll = 0
-        last_movie_num = 0
-        while current_movie_num <= num_movies:
+        movie_num_at_current_scroll = 0
+        current_movie_num = 0
+        while current_movie_num < num_movies:
             ind = 0
             while ind < len(movies):
                 start_time = time.time()
@@ -364,6 +384,8 @@ def parse_movie_data(list_name, movies, driver, current_movie_num, num_movies):
                 movie_data = get_movie_general_data(movie)
                 movie_rank, movie_name, movie_premiere_date, movie_prod_loc, movie_genre, movie_duration = movie_data
                 line_info = [movie_rank, movie_name, movie_premiere_date, movie_prod_loc, movie_genre, movie_duration]
+                print("Getting info for " + movie_name + " ...")
+
                 # downloading cover photo
                 if download_cover:
                     get_cover_photo(movie, path, movie_name)
@@ -381,49 +403,75 @@ def parse_movie_data(list_name, movies, driver, current_movie_num, num_movies):
                         movies, _, _, _ = get_movie_list(driver, 
                                                         "",
                                                         first_time=False,
-                                                        current_movie_num=last_movie_num)
-                
+                                                        current_movie_num=movie_num_at_current_scroll)
+                current_movie_num += 1
+                print("Current Movie Num:")
+                print(current_movie_num)
                 # write information to csv file
                 file_line = ','.join(line_info)
                 file_line += '\n'
                 print(file_line)
                 file.write(file_line)
                 ind += 1
-                print("--- %s seconds ---" % (time.time() - start_time))
+                print("--- %s seconds ---\n\n" % (time.time() - start_time))
             # scroll to get info on more movies
             driver, _ = scroll(driver)
-            last_movie_num = current_movie_num
-            movies, current_movie_num, _, _ = get_movie_list(driver, 
-                                                             "",
-                                                             first_time=False,
-                                                             current_movie_num=current_movie_num)
+            # last_movie_num = current_movie_num
+            movies, _, _, _ = get_movie_list(driver, 
+                                             "",
+                                             first_time=False,
+                                             current_movie_num=current_movie_num)
+            movie_num_at_current_scroll = current_movie_num
             num_scroll += 1
         print("Finished !")
 
+
+def parse_arg():
+    with open("params.yaml", "r", encoding='utf-8') as stream:
+        try:
+            params = yaml.safe_load(stream)
+            print(params)
+            return params
+        except yaml.YAMLError as exc:
+            print(exc)
+            return None
+
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("url", help="你的影单链接")
-    parser.add_argument("--download_cover", action="store_true",
-                        help="下载海报")
-    parser.add_argument("--download_details", action="store_true",
-                        help="下载影片简介，解说链接")
-    parser.add_argument("--download_accessories", action="store_true",
-                        help="下载影片简介，日历背景，剧照，评论，解说链接")
-    args = parser.parse_args()
+    # Parsing parameters from yaml
+    params = parse_arg()
+    if params:
+        download_cover = params['download_cover']
+        download_details = params['download_details']
+        download_accessories = params['download_accessories']
+        url = params['url']
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("url", help="你的影单链接")
+    # parser.add_argument("--download_cover", action="store_true",
+    #                     help="下载海报")
+    # parser.add_argument("--download_details", action="store_true",
+    #                     help="下载影片简介，解说链接")
+    # parser.add_argument("--download_accessories", action="store_true",
+    #                     help="下载影片简介，日历背景，剧照，评论，解说链接")
+    # args = parser.parse_args()
 
-    download_cover = args.download_cover
-    download_details = args.download_details
-    download_accessories = args.download_accessories
-    url = args.url 
+    # download_cover = args.download_cover
+    # download_details = args.download_details
+    # download_accessories = args.download_accessories
+    # url = args.url 
 
-    chrome_options = Options()
-    chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47")
-    
-    
-    driver = webdriver.Chrome(service=ChromeService( 
-        ChromeDriverManager().install()), options=chrome_options) 
-    driver.maximize_window()
+        chrome_options = Options()
+        chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47")
+        
+        
+        driver = webdriver.Chrome(service=ChromeService( 
+            ChromeDriverManager().install()), options=chrome_options) 
+        driver.maximize_window()
 
-    movies, current_movie_num, list_name, num_movies = get_movie_list(driver, url)
-    parse_movie_data(list_name, movies, driver, current_movie_num, num_movies)
+        begin_time = time.time()
+        movies, current_movie_num, list_name, num_movies = get_movie_list(driver, url)
+        parse_movie_data(list_name, movies, driver, current_movie_num, num_movies)
+        mins_used = time.time() - begin_time
+        print("---用时 %s 分钟---\n\n" % (mins_used))
+    else:
+        print("Invalid Params, 请检查 params.yaml 的参数格式！")
