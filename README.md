@@ -127,22 +127,24 @@
 
 ### 下载解说视频
 
+
+**请勿侵犯创作者（K星球）的版权，未经许可下请勿传播，下载，上传，依靠K星球的视频牟利**
+
+*不推荐下载解说，B站，Youtube，各大视频平台都可以搜到K猫的解说*
+- 视频耗内存，下载耗时间
+
 #### 所需资源
 - Pandas
   - `conda install -c anaconda pandas`
 
 
-**请勿侵犯创作者（K星球）的版权，未经许可下请勿传播，下载，上传，依靠K星球的视频牟利**
-*不推荐下载解说，B站，Youtube，各大视频平台都可以搜到K猫的解说*
-- 视频耗内存，下载耗时间
-
-
+#### 下载流程
 但如果实在需要下载：
-1. 确保`movies`文件夹内影单资料存在
-2. Anaconda Prompt 内
-  - `cd <Movie Saver 所在路径`
-  - `conda activate KPlanet`
-  - `python vid_downloader.py <影单名>`
+- 确保`movies`文件夹内影单资料存在
+- Anaconda Prompt 内
+  1. `cd <Movie Saver 所在路径>`
+  2. `conda activate KPlanet`
+  3. `python vid_downloader.py <影单名>`
 
 ### 更新脚本
 - 如果使用了 *方法二* 下载 Movie Saver
