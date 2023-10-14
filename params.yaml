@@ -1,11 +1,11 @@
 # 你的影单链接
-url: https://app.kplanet.vip/m/share/movie-group?groupID=2289&fansID=245593&type=702
+url: 
 
 # 下载海报
 download_cover: True
 
-# 下载影片简介，解说链接
+# 下载影片外文名，简介, 评论，对应解说名，解说链接
 download_details: True
 
-# 下载影片简介，日历背景，剧照，评论
+# 下载影片日历背景，剧照
 download_accessories: True
