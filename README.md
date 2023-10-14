@@ -8,6 +8,10 @@
 
 ## 安装指南 
 
+**小贴士**
+- 若是在外网环境中安装，体验更为顺畅
+- 国内环境安装，由于从未测试过，并不保证可以安装成功
+
 ### 所需软件
 1. 下载并安装Google Chrome
    - *国外*
@@ -22,11 +26,22 @@
    - *国内*
      - 请参考->[https://juejin.cn/post/7193347318827974714](https://juejin.cn/post/7193347318827974714)     
 3. 下载Movie Saver
+   **方法一**
    - 点击右上角绿色按钮 （图标是这样的 `<> code` )
    - 选择 `Download ZIP.`
    - 解压并保存至你喜欢的地方，建议存在有足够空间的文件夹里
      - 记一下保存的路径，例如：`C:\xxx\xxx\...\movie_saver-main`
 ![img download_repo](./instruction_imgs/download_repo.jpeg)
+   **方法二**
+   - *推荐此方法，但可能会报错*
+   - 下载git
+     - [如何下载git](https://blog.csdn.net/weixin_39450145/article/details/125530804)
+     - 打开 Command Prompt
+        - `Win + S` 搜索 `Command Prompt`
+     -  在 Command Prompt 中 `cd ` 到 你想下载 Movie Saver 的地点 (例如 `cd C:\Users\xxx\Documents`, 建议存在有足够空间的文件夹里)
+        - 输入 `git clone https://github.com/ansue1234/Movie_Saver.git` 
+        - `cd Movie_Saver`
+        - `pwd` 并记下此路径，这将是 Movie Saver 的路径
 
 
 ### 安装步骤
@@ -55,7 +70,7 @@
    - `conda activate KPlanet`
 4. 输入参数
    - [如何打开`YAML`文档](https://juejin.cn/s/yaml%E6%96%87%E4%BB%B6%E7%94%A8%E4%BB%80%E4%B9%88%E6%89%93%E5%BC%80)
-   - 在`params.yaml`文档中， 可以修改参数
+   - 在`params.yaml`文档中， 可以直接在内修改参数
      - `url:` 后是你影单的链接
      - `download_cover:` 若是想下载电影海报，改为 `True`, 若是不想，改为 `False`
      - `download_details:` 改为 `True` 则会下载该影片的 （*只有有解说的影片有*）：
@@ -83,7 +98,7 @@
   - 例：
     ```
     # 你的影单链接
-    url: https://app.kplanet.vip/m/share/movie-group?groupID=0&fansID=261154&type=703
+    url: https://app.kplanet.vip/m/share/movie-group?groupID=0&fansID=261154&type=701
 
     # 下载海报
     download_cover: True
@@ -109,6 +124,17 @@
         - `image` 所有的海报，剧照，台词日历背景图
         - `<影片名>.md` 所有下载的影片详细资料
           - 可用Edge游览器查阅->[如何查阅md文档]（https://blog.csdn.net/qzw752890913/article/details/125262950）
+
+
+### 更新脚本
+- 如果使用了 *方法二* 下载 Movie Saver
+  - Command Prompt 中`cd`至 Movie Saver 的路径
+  - `git pull` 即可更新脚本至最新版本
+  - 跟着**使用指南**照常使用即可
+- 如果使用了 *方法一* 下载 Movie Saver
+  - 备份`Movie_Saver-main`中 `movie`内的数据
+  - 删除`Movie_Saver-main` 并重新下载 Movie Saver (方法一，二，均可)
+  - 跟着**使用指南**照常使用即可（*记得使用新下载 Movie Saver 的路径*）
 
 ### 其它信息
 - 运行时长根据网络状况以及影单长短
