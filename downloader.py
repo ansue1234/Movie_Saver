@@ -489,6 +489,7 @@ if __name__ == "__main__":
         chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47")
         chrome_options.add_argument('--ignore-certificate-errors')
         chrome_options.add_argument('--ignore-ssl-errors')
+        chrome_options.add_argument('--allow-insecure-localhost')
         
         driver = webdriver.Chrome(service=ChromeService( 
             ChromeDriverManager().install()), options=chrome_options) 
@@ -497,7 +498,10 @@ if __name__ == "__main__":
         begin_time = time.time()
         movies, current_movie_num, list_name, num_movies = get_movie_list(driver, url)
         parse_movie_data(list_name, movies, driver, current_movie_num, num_movies)
-        mins_used = (time.time() - begin_time)/60
-        print("---用时 %s 分钟---\n\n" % (mins_used))
+        secs_used = (time.time() - begin_time)
+        hours_used = secs_used//3600
+        remain_mins = (secs_used % 3600) // 60
+        remain_secs = (secs_used % 3600) % 60
+        print("---用时 {0}小时 {1}分钟 {2}秒， 共{3}秒---\n\n".format(hours_used, remain_mins, remain_secs, secs_used))
     else:
         print("Invalid Params, 请检查 params.yaml 的参数格式！")
