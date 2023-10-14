@@ -462,7 +462,7 @@ def parse_movie_data(list_name, movies, driver, current_movie_num, num_movies):
                 movies = new_movies
             movie_num_at_current_scroll = current_movie_num
             num_scroll += 1
-        print("Finished !")
+        print("Finished 完成！！！")
 
 
 def parse_arg():

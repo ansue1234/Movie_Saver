@@ -39,6 +39,7 @@
      - 打开 Command Prompt
         - `Win + S` 搜索 `Command Prompt`
      -  在 Command Prompt 中 `cd ` 到 你想下载 Movie Saver 的地点 (例如 `cd C:\Users\xxx\Documents`, 建议存在有足够空间的文件夹里)
+     -  确定防火墙允许git通过（[如何让程序通过防火墙](https://m.jqjq.net/jiqiao/5029.html)）
         - 输入 `git clone https://github.com/ansue1234/Movie_Saver.git` 
         - `cd Movie_Saver`
         - `pwd` 并记下此路径，这将是 Movie Saver 的路径
@@ -144,7 +145,8 @@
 - Anaconda Prompt 内
   1. `cd <Movie Saver 所在路径>`
   2. `conda activate KPlanet`
-  3. `python vid_downloader.py <影单名>`
+  3. `python vid_downloader.py <"影单名">`
+      - 例如: `python vid_downloader.py "TA想看"`
 
 ### 更新脚本
 - 如果使用了 *方法二* 下载 Movie Saver

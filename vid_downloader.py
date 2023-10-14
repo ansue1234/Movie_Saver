@@ -2,10 +2,13 @@ import argparse
 import os
 import requests
 import pandas as pd
+import time
 
 def download_video(path, movie_name, url):
+    start_time = time.time()
     print("Current movie: " + movie_name)
     try:
+        print("Getting vid...")
         r = requests.get(url)
         new_path = path + '/' + movie_name
         if not os.path.exists(new_path):
@@ -19,6 +22,7 @@ def download_video(path, movie_name, url):
                 if chunk: 
                     vid.write(chunk) 
             print("Video saved!")
+            print('-----{0:.4f}s-----'.format(time.time()-start_time))
     except:
         print("can't download video")
 
