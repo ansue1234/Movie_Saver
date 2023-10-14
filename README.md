@@ -26,19 +26,27 @@
    - 选择 `Download ZIP.`
    - 解压并保存至你喜欢的地方，建议存在有足够空间的文件夹里
      - 记一下保存的路径，例如：`C:\xxx\xxx\...\movie_saver-main`
+![img download_repo](./instruction_imgs/download_repo.jpeg)
 
 
 ### 安装步骤
-1. 打开Anaconda Prompt
-2. 在Anaconda Prompt 中 `cd ` 到 Movie Saver 的路径
-   - 例如: `D:\movie_saver-main`
+1. 打开 Anaconda Prompt
+   - `Win + S` 搜索`Anaconda Prompt`
+![img Anaconda](./instruction_imgs/Anaconda.png)
+1. 在Anaconda Prompt 中 `cd ` 到 Movie Saver 的路径
+   - 例如: `D:\Movie_Saver-main` 或 `D:\Movie_Saver-main\Movie_Saver-main`
    - [如何查询文件夹的路径](https://zhidao.baidu.com/question/1905489514073876060.html)
-     - 文件夹名称为：`movie_saver-main`
-3. 在Anaconda Prompt 中输入以下指令(在每一条指令运行完成后再输入下一条)
+     - 文件夹名称为：`Movie_Saver-main`
+     - `cd <Movie_Saver-main的路径>`
+2. 在Anaconda Prompt 中输入以下指令(在每一条指令运行完成后再输入下一条)
    - `conda env create -f environment.yml`
    - `conda activate KPlanet`
    - `conda env list`
      - 检查一下输出里有没有 `KPlanet`
+  
+以下是Anaconda Prompt 的操作界面以及我们输入的指令
+![img Anaconda_Screen](./instruction_imgs/Anaconda_install.jpg)
+
 
 ## 使用指南
 1. 打开Anaconda Prompt
@@ -46,6 +54,7 @@
 3. 在Anaconda Prompt 中输入以下指令(在每一条指令运行完成后再输入下一条)
    - `conda activate KPlanet`
 4. 输入参数
+   - [如何打开`YAML`文档](https://juejin.cn/s/yaml%E6%96%87%E4%BB%B6%E7%94%A8%E4%BB%80%E4%B9%88%E6%89%93%E5%BC%80)
    - 在`params.yaml`文档中， 可以修改参数
      - `url:` 后是你影单的链接
      - `download_cover:` 若是想下载电影海报，改为 `True`, 若是不想，改为 `False`
@@ -86,6 +95,7 @@
     download_accessories: True
 
     ```
+   - 
 5. 在Anaconda Prompt 中输入以下指令
    - `python downloader.py`
 
